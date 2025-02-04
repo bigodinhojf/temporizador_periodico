@@ -3,7 +3,7 @@
 #include "pico/stdlib.h"
 #include "hardware/timer.h" // Biblioteca de temporizadores
 
-// Definição dos pinos GPIO e constantes
+// Definição dos pinos GPIO
 const int led_pin_green = 11; // LED Verde GPIO 11
 const int led_pin_yellow = 12; // LED Amarelo/azul GPIO 12
 const int led_pin_red = 13; // LED vermelho GPIO 13
@@ -14,15 +14,19 @@ int marcador = 3; // Auxilia na decisão de qual LED deve acender
 
 // Função de callback do temporizador
 bool repeating_timer_callback(struct repeating_timer *t) {
+    // Tomada de decisão para verificar qual LED deve acender
     if(marcador % 3 == 0){
+        // LED Vermelho acende
         gpio_put(led_pin_red, 1);
         gpio_put(led_pin_yellow, 0);
         gpio_put(led_pin_green, 0);
     }else if(marcador % 3 == 1){
+        // LED Amarelo/Azul acende
         gpio_put(led_pin_red, 0);
         gpio_put(led_pin_yellow, 1);
         gpio_put(led_pin_green, 0);
     }else if(marcador % 3 == 2){
+        // LED Verde acende
         gpio_put(led_pin_red, 0);
         gpio_put(led_pin_yellow, 0);
         gpio_put(led_pin_green, 1);
@@ -58,9 +62,10 @@ int main()
     // Configura o temporizador para chamar a função de callback a cada 3 segundos.
     add_repeating_timer_ms(3000, repeating_timer_callback, NULL, &timer);
 
-    printf(" -- PROGRAMA INICIADO - TIMER: %ds --\n", tempo_decorrido);
+    printf(" -- PROGRAMA INICIADO - TEMPO: %ds --\n", tempo_decorrido);
 
     while (true) {
+        // Marcação de tempo a cada 1s
         sleep_ms(1000);
         tempo_decorrido++;
         printf("Marcador temporal de 1s -> total: %ds\n", tempo_decorrido);
