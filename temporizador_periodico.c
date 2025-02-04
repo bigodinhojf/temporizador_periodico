@@ -1,24 +1,68 @@
+// Inclusão das bibliotecas utilizadas
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "hardware/timer.h"
+#include "hardware/timer.h" // Biblioteca de temporizadores
 
-int64_t alarm_callback(alarm_id_t id, void *user_data) {
-    // Put your timeout handler code in here
-    return 0;
+// Definição dos pinos GPIO e constantes
+const int led_pin_green = 11; // LED Verde GPIO 11
+const int led_pin_yellow = 12; // LED Amarelo/azul GPIO 12
+const int led_pin_red = 13; // LED vermelho GPIO 13
+
+// Definição de variáveis globais
+int tempo_decorrido = 0; // Tempo decorrido do início do programa em (s)
+int marcador = 3; // Auxilia na decisão de qual LED deve acender
+
+// Função de callback do temporizador
+bool repeating_timer_callback(struct repeating_timer *t) {
+    if(marcador % 3 == 0){
+        gpio_put(led_pin_red, 1);
+        gpio_put(led_pin_yellow, 0);
+        gpio_put(led_pin_green, 0);
+    }else if(marcador % 3 == 1){
+        gpio_put(led_pin_red, 0);
+        gpio_put(led_pin_yellow, 1);
+        gpio_put(led_pin_green, 0);
+    }else if(marcador % 3 == 2){
+        gpio_put(led_pin_red, 0);
+        gpio_put(led_pin_yellow, 0);
+        gpio_put(led_pin_green, 1);
+    }
+    marcador++;
+    // Retorna true para manter o temporizador repetindo.
+    return true;
 }
 
-
-
+// Função principal
 int main()
 {
+    // Inicialização da comunicação serial
     stdio_init_all();
 
-    // Timer example code - This example fires off the callback after 2000ms
-    add_alarm_in_ms(2000, alarm_callback, NULL, false);
-    // For more examples of timer use see https://github.com/raspberrypi/pico-examples/tree/master/timer
+    // Inicialização dos pinos GPIO
+
+    // Inicializa o LED Verde GPIO 11 e o define como saída
+    gpio_init(led_pin_green);
+    gpio_set_dir(led_pin_green, GPIO_OUT);
+
+    // Inicializa o LED Amarelo/Azul GPIO 12 e o define como saída
+    gpio_init(led_pin_yellow);
+    gpio_set_dir(led_pin_yellow, GPIO_OUT);
+
+    // Inicializa o LED Vermelho GPIO 13 e o define como saída
+    gpio_init(led_pin_red);
+    gpio_set_dir(led_pin_red, GPIO_OUT);
+
+    // Declaração de uma estrutura de temporizador de repetição.
+    struct repeating_timer timer;
+
+    // Configura o temporizador para chamar a função de callback a cada 3 segundos.
+    add_repeating_timer_ms(3000, repeating_timer_callback, NULL, &timer);
+
+    printf(" -- PROGRAMA INICIADO - TIMER: %ds --\n", tempo_decorrido);
 
     while (true) {
-        printf("Hello, world!\n");
         sleep_ms(1000);
+        tempo_decorrido++;
+        printf("Marcador temporal de 1s -> total: %ds\n", tempo_decorrido);
     }
 }
